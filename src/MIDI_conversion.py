@@ -43,7 +43,23 @@ def get_free_filename(stub, suffix='', directory='./results/', date=False):
                 Path(file_candidate).mkdir()
             return file_candidate
 
-def state_seq_to_MIDI(state_seq, state_indices, dir, desired_fstub='seqmid', note_dur=1): 
+def state_seq_to_MIDI(state_seq, state_indices, dir, desired_fstub='seqmid', note_dur=1):
+    """
+    Convert a sequence of voicing states to a MIDI file.
+
+    Creates a MIDI file where each state becomes a chord with all four voices
+    sounding simultaneously. All chords have equal duration.
+
+    Args:
+        state_seq (list): List of state indices representing the voicing sequence
+        state_indices (dict): Maps state indices to voicings [bass, tenor, alto, soprano]
+        dir (str): Output directory for MIDI file
+        desired_fstub (str): Filename stub. Default: 'seqmid'
+        note_dur (float): Duration of each note in seconds. Default: 1
+
+    Returns:
+        str: Path to the created MIDI file
+    """
     desired_filename = get_free_filename(desired_fstub, '.mid', directory=dir)
     # Create a PrettyMIDI object
     midi_obj = pretty_midi.PrettyMIDI() # init tempo is 120, so a quarter note is 0.5 sec
@@ -141,7 +157,19 @@ def state_seq_to_MIDI_better(state_seq, state_indices, dir, desired_fstub):
     return desired_fname, midi_obj
 
 
-def melody_to_MIDI(melody, note_length=1, save=False, path='./melody.mid'): # note length in seconds
+def melody_to_MIDI(melody, note_length=1, save=False, path='./melody.mid'):
+    """
+    Convert a melody (sequence of MIDI pitches) to a MIDI file.
+
+    Args:
+        melody (list): List of MIDI pitch numbers representing the melody
+        note_length (float): Duration of each note in seconds. Default: 1
+        save (bool): Whether to save the MIDI file. Default: False
+        path (str): Output file path if saving. Default: './melody.mid'
+
+    Returns:
+        pretty_midi.PrettyMIDI: MIDI object containing the melody
+    """
     print("MELODY:", melody)
     notes = []
     for i, mel in enumerate(melody):
@@ -164,6 +192,22 @@ def melody_to_MIDI(melody, note_length=1, save=False, path='./melody.mid'): # no
     return notes, None
 
 def state_seq_with_melody_to_MIDI(melody, state_seq, state_indices, directory, desired_fstub='seqmid'):
+    """
+    Create a MIDI file combining a melody with harmonizing voicings.
+
+    Generates a four-part harmonization where the soprano line follows the given
+    melody and the other voices are determined by the state sequence.
+
+    Args:
+        melody (list): List of MIDI pitch numbers for the soprano line
+        state_seq (list): List of state indices representing voicing sequence
+        state_indices (dict): Maps state indices to voicings [bass, tenor, alto, soprano]
+        directory (str): Output directory for MIDI file
+        desired_fstub (str): Filename stub. Default: 'seqmid'
+
+    Returns:
+        str: Path to the created MIDI file
+    """
     desired_filename = get_free_filename(desired_fstub, '.mid', directory=directory)
     # Create a PrettyMIDI object
     midi_obj = pretty_midi.PrettyMIDI() # init tempo is 120, so a quarter note is 0.5 sec
@@ -184,7 +228,20 @@ def state_seq_with_melody_to_MIDI(melody, state_seq, state_indices, directory, d
     midi_obj.instruments.append(piano)
     midi_obj.write(desired_filename)
 
-def midi_to_wav(midi_path,wav_path=None):
+def midi_to_wav(midi_path, wav_path=None):
+    """
+    Convert a MIDI file to WAV audio using FluidSynth.
+
+    Requires FluidSynth to be installed on the system.
+
+    Args:
+        midi_path (str): Path to input MIDI file
+        wav_path (str, optional): Path for output WAV file. If None, uses same
+            name as MIDI file with .wav extension
+
+    Returns:
+        None
+    """
     if wav_path == None:
         wav_path = midi_path[:-3] + 'wav'
     #print("CONVERTING")
@@ -193,6 +250,20 @@ def midi_to_wav(midi_path,wav_path=None):
     fs.midi_to_audio(midi_path, wav_path)
 
 def midis_to_wavs(midi_dir, wav_dir=None):
+    """
+    Convert all MIDI files in a directory to WAV format.
+
+    Processes all .mid files in the specified directory and converts them
+    to WAV audio files using FluidSynth.
+
+    Args:
+        midi_dir (str): Directory containing MIDI files
+        wav_dir (str, optional): Output directory for WAV files. If None,
+            WAV files are saved in the same directory as MIDI files
+
+    Returns:
+        None
+    """
     print("MIDI DIR:", midi_dir, "WAV DIR", wav_dir)
     if wav_dir == None: 
         wav_dir = midi_dir

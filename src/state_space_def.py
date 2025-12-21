@@ -32,6 +32,18 @@ Vocabulary:
 ########################################################
 # RULES THAT ARE NOT DEPENDENT ON PREVIOUS STATE!
 def doubled_leading_tone(next_state):
+    """
+    Check if the leading tone (B in C major) is doubled in a voicing.
+
+    Doubling the leading tone is generally avoided in tonal harmony as it
+    creates voice leading challenges when resolving to the tonic.
+
+    Args:
+        next_state (list): Voicing [bass, tenor, alto, soprano] as MIDI pitches
+
+    Returns:
+        int: 1 if leading tone is doubled, 0 otherwise
+    """
     leading_tone_count = 0 
     for note in next_state:
         if note%12 == 11:
@@ -75,7 +87,20 @@ def second_inversion_triad_doubling(next_state):
             return 1
     return 0
 ########################################################
-def is_complete(voicing, chord): 
+def is_complete(voicing, chord):
+    """
+    Check if a chord voicing contains all required notes.
+
+    A complete triad must have all 3 chord tones present.
+    A complete 7th chord must have all 4 chord tones present.
+
+    Args:
+        voicing (list): Voicing [bass, tenor, alto, soprano] as MIDI pitches
+        chord (int): Chord number (1-7 for triads, 8-11 for 7th chords)
+
+    Returns:
+        bool: True if voicing is complete, False otherwise
+    """
     unique_notes = [] 
     for pitch in voicing: 
         cur_note = pitch%12
@@ -89,14 +114,41 @@ def is_complete(voicing, chord):
             return False 
     return True
 
-def determine_inversion(voicing, chord): 
+def determine_inversion(voicing, chord):
+    """
+    Determine the inversion of a chord voicing.
+
+    Inversion is determined by which chord tone is in the bass:
+    - Root in bass: root position (0)
+    - Third in bass: first inversion (1)
+    - Fifth in bass: second inversion (2)
+    - Seventh in bass: third inversion (3, for 7th chords only)
+
+    Args:
+        voicing (list): Voicing [bass, tenor, alto, soprano] as MIDI pitches
+        chord (int): Chord number
+
+    Returns:
+        int: Inversion number (0-3)
+    """
     bottom_note = voicing[0]%12
     for i,n in enumerate(notes_in_chords[chord]):
-        if bottom_note == n: 
+        if bottom_note == n:
             return i
-    # returns 0 for root position, 1 for first inversion, 2 for second, 3 for third (7ths only)
 
 def determine_chord_from_voicing(voicing):
+    """
+    Identify which chord a voicing represents.
+
+    Analyzes the pitch classes present in a voicing and matches them
+    to the known chord vocabulary in C major.
+
+    Args:
+        voicing (list): Voicing [bass, tenor, alto, soprano] as MIDI pitches
+
+    Returns:
+        int: Chord number (1-11), or None if no match found
+    """
     note_list = []
     for pitch in voicing: 
         note = pitch%12
