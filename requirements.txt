@@ -11,6 +11,10 @@ pretty-midi>=0.2.9
 midi2audio>=0.1.1
 librosa>=0.9.0
 
+# Testing
+pytest>=7.0.0
+pytest-cov>=3.0.0  # For coverage reporting
+
 # Optional: For better audio synthesis
 # FluidSynth system library required for midi2audio
 # Install on Ubuntu/Debian: sudo apt-get install fluidsynth
