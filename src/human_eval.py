@@ -1,9 +1,11 @@
 import pandas as pd
+from pathlib import Path
 
-
-bach_vs_q_path = '/Users/sadiela/Documents/phd/courses/courses_spring_2023/ec700reinforcementlearning/final_project/results/mechanicalturk_csvs/bach_vs_q_batch_results.csv'
-doodle_vs_q_path = '/Users/sadiela/Documents/phd/courses/courses_spring_2023/ec700reinforcementlearning/final_project/results/mechanicalturk_csvs/doodle_vs_q_batch_results.csv'
-rand_vs_q_path = '/Users/sadiela/Documents/phd/courses/courses_spring_2023/ec700reinforcementlearning/final_project/results/mechanicalturk_csvs/rand_vs_q_batch_results.csv'
+# Use relative paths from project root
+results_dir = Path(__file__).parent.parent / 'results' / 'mechanicalturk_csvs'
+bach_vs_q_path = results_dir / 'bach_vs_q_batch_results.csv'
+doodle_vs_q_path = results_dir / 'doodle_vs_q_batch_results.csv'
+rand_vs_q_path = results_dir / 'rand_vs_q_batch_results.csv'
 
 field = 'Answer.harmonization-preference.label'
 

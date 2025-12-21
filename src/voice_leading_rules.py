@@ -1,14 +1,15 @@
-from state_space_def import * 
+from state_space_def import *
 from pretty_midi import note_name_to_number
-
-ILL_LEAP =  0.1407
-VC =  0.1281
-PERF58 = 0.0919
-DIR58 = 0.1229
-ILL_CT = 0.1063
-ILL_LT_RES = 0.1291
-ILL_7_APP = 0.1427
-ILL_7_RES = 0.1383
+from constants import (
+    ILLEGAL_LEAP_WEIGHT as ILL_LEAP,
+    VOICE_CROSSING_WEIGHT as VC,
+    PARALLEL_FIFTHS_OCTAVES_WEIGHT as PERF58,
+    DIRECT_FIFTHS_OCTAVES_WEIGHT as DIR58,
+    ILLEGAL_COMMON_TONE_WEIGHT as ILL_CT,
+    ILLEGAL_LEADING_TONE_RESOLUTION_WEIGHT as ILL_LT_RES,
+    ILLEGAL_SEVENTH_APPROACH_WEIGHT as ILL_7_APP,
+    ILLEGAL_SEVENTH_RESOLUTION_WEIGHT as ILL_7_RES,
+)
 
 def illegal_leaps(state, next_state): 
     # returns number of instances of an illegal leap 

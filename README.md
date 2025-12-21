@@ -65,4 +65,122 @@ We can reformulate the problem as follows:
 * Our Q-value table is `nxn`
 * 
 
-### Listening 
+### Listening
+
+The trained models can generate MIDI files which can be converted to audio for listening and evaluation.
+
+## Installation
+
+### Prerequisites
+- Python 3.7+
+- FluidSynth (for MIDI to audio conversion)
+  - Ubuntu/Debian: `sudo apt-get install fluidsynth`
+  - macOS: `brew install fluid-synth`
+  - Windows: Download from [FluidSynth website](http://www.fluidsynth.org/)
+
+### Setup
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd rlvf
+```
+
+2. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Verify installation:
+```bash
+python -c "import pretty_midi; print('Installation successful!')"
+```
+
+## Project Structure
+
+```
+rlvf/
+├── src/                    # Core source code
+│   ├── main.py            # Training and evaluation entry point
+│   ├── voice_leading_rules.py  # Rule violation checking
+│   ├── state_space_def.py # Legal voicing definitions
+│   ├── MIDI_conversion.py # MIDI/audio conversion utilities
+│   ├── constants.py       # Configuration constants
+│   └── chord_constants.py # Chord definitions
+├── models/                # Q-learning agent implementations
+│   └── models.py         # VoicingModel, FreeModel, HarmonizationModel
+├── examples/              # Jupyter notebooks for analysis
+├── data/                  # Training data (melodies, chord progressions)
+├── output/savedmodels/    # Saved model checkpoints
+├── results/               # Generated outputs and evaluations
+└── unit_tests/           # Unit tests
+
+```
+
+## Usage
+
+### Training Models
+
+Train all three models (this will take several hours):
+```bash
+cd src
+python main.py
+```
+
+To train individual models, modify the `if __name__ == "__main__"` block in `src/main.py` to call only the desired training functions.
+
+### Model Configuration
+
+Edit these parameters in `src/main.py`:
+- `n_epochs`: Number of training epochs (default: 10000)
+- `num_runs`: Number of evaluation runs (default: 50)
+- `CHECKPOINT`: Checkpoint interval for saving models (default: 500)
+
+### Evaluating Models
+
+The evaluation functions compare model performance against random baselines across multiple metrics:
+- Voice leading rewards
+- Harmonic progression rewards
+- Rule violations (parallel 5ths, voice crossing, etc.)
+
+### Generating Music
+
+See the Jupyter notebooks in `examples/` for:
+- Data preprocessing (`jsb_data_preprocessing.ipynb`)
+- Reward function visualization (`reward_function_plotting.ipynb`)
+- Rule weighting analysis (`rules_weighting.ipynb`)
+
+## Voice Leading Rules
+
+The reward function penalizes violations of classical voice leading rules:
+- **Illegal leaps**: Augmented intervals, 7ths, leaps > octave
+- **Voice crossing**: Parts crossing each other
+- **Parallel 5ths/octaves**: Forbidden parallel motion
+- **Direct 5ths/octaves**: Outer voices moving in parallel to perfect intervals
+- **Leading tone resolution**: Improper resolution of the leading tone
+- **7th chord handling**: Incorrect approach/resolution of 7th chords
+
+Weights for each rule are defined in `src/constants.py` and were determined empirically.
+
+## Data Format
+
+### Voicings
+A voicing is represented as a list of 4 MIDI pitches: `[bass, tenor, alto, soprano]`
+- Sorted from lowest to highest
+- Contains all chord tones with one doubled note
+
+### Input Data
+- Chord progressions: `data/jsb_maj_chord_progs.yaml`
+- Melodies: `data/jsb_maj_melodies.yaml`
+- Original Bach voicings: `data/jsb_maj_orig_voicings.yaml`
+
+## Contributing
+
+When contributing, please:
+1. Follow PEP 8 style guidelines
+2. Add docstrings to new functions
+3. Update tests as needed
+4. Keep imports explicit (avoid `from module import *`)
+
+## License
+
+See LICENSE file for details.

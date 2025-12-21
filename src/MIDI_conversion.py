@@ -4,13 +4,10 @@ from midi2audio import FluidSynth
 import os
 from pathlib import Path
 import numpy as np
-import pretty_midi
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from tqdm import tqdm
-from pathlib import Path
 from numpy import ndarray
-import os
 import sys
 import librosa
 from datetime import datetime
@@ -496,84 +493,3 @@ if __name__ == "__main__":
             longer_durs.append(i)
     print("NUMBER:", len(longer_durs))
     print(longer_durs)
-
-    '''with open('./data/jsb_major_orig_voicings.yaml', 'r') as file: 
-        jsb_voicings = yaml.safe_load(file)
-
-    test_vocs = jsb_voicings['test']
-    gen_result_midis(test_vocs, state_indices, './results/human_eval/bach/', 'jsb')
-    
-    with open('./results/for_table/random_voicings.yaml', 'r') as file: 
-        rand_voc_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/model_voicings.yaml', 'r') as file: 
-        mod_voc_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/random_harmonizations.yaml', 'r') as file: 
-        rand_harm_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/model_harmonizations.yaml', 'r') as file: 
-        mod_harm_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/random_free.yaml', 'r') as file: 
-        rand_free_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/model_free.yaml', 'r') as file: 
-        mod_free_seqs = yaml.safe_load(file)'''
-
-    #gen_result_midis(rand_voc_seqs, test_durations, state_indices, './results/human_eval/voicing/', 'random')
-    #gen_result_midis(mod_voc_seqs, test_durations, state_indices, './results/human_eval/voicing/', 'mod')
-    #gen_result_midis(rand_harm_seqs, test_durations, state_indices, './results/human_eval/harm/', 'random')
-    #gen_result_midis(mod_harm_seqs, test_durations, state_indices, './results/human_eval/harm/', 'mod')
-    #gen_result_midis(rand_free_seqs, test_durations, state_indices, './results/human_eval/free/', 'random')
-    #gen_result_midis(mod_free_seqs, test_durations, state_indices, './results/human_eval/free/', 'mod')
-
-    sys.exit(0)
-
-    '''pianoroll = new_pm.instruments[0].get_piano_roll()
-    _, ax = plt.subplots()
-    ax  = custom_plot_pianoroll(ax, pianoroll, resolution=2)
-    plt.savefig()
-
-    pianoroll = old_pm.instruments[0].get_piano_roll()
-    _, ax = plt.subplots()
-    ax  = custom_plot_pianoroll(ax, pianoroll, resolution=2)
-    plt.show()
-
-    midi_to_wav(new_mid)
-    midi_to_wav(old_mid)'''
-
-    # UNIT TEST: melody_to_MIDI #
-
-    pm = pretty_midi.PrettyMIDI("./results/voicing_results/voicing-1.mid")
-    res_folder = "./results/midi_instr/"
-    test_different_midi_instruments(pm, res_folder)
-    
-
-    midi_path = "./results/voicing_results/voicing-1.mid"
-    wav_path = "./results/voicing_results/NEWSOUNDFONT_voicing-1.wav"
-    midi_to_wav(midi_path,wav_path)
-
-
-    # Loading a file on disk using PrettyMidi, and show
-    measure_subdiv=1
-    tempo = pm.get_tempo_changes()[1][0]
-    fs= 4
-    print(fs)
-    print("Tempo:", tempo)
-    pianoroll = pm.instruments[0].get_piano_roll(fs=fs)
-    _, ax = plt.subplots()
-    ax  = custom_plot_pianoroll(ax, pianoroll, resolution=2)
-
-    ax.figure.set_size_inches(20, 5)
-    plt.savefig('./results/voicing_results/voicing-1.png',bbox_inches="tight")
-
-
-    #midis_to_wavs('./results/free_results/')
-
-    '''
-    - 52
-    - 53
-    - 60
-    - 69
-    '''

@@ -29,8 +29,6 @@ class Qlearner():
             self.state_indices = yaml.safe_load(file)
 
         self.numStates = len(self.state_indices.keys())
-        #print("NUMSTATES:", self.numStates)
-
         self.Qvalues = np.zeros((self.numStates,self.numStates))
 
     def saveModel(self, epochs, rewards): # saved model is just a matrix of the Q values :)
@@ -44,14 +42,12 @@ class Qlearner():
 
         with open(modelpath, 'wb') as f:
             pickle.dump(data, f)
-        #np.save(modelpath, self.Qvalues)
 
     def loadModel(self, modelpath):
         with open(modelpath, 'rb') as f: 
             data = pickle.load(f)
         self.Qvalues = data['Q']
         return data['rewards'], data['epochs']
-        #self.Qvalues = np.load(modelpath)
     
     def prepModel(self, model_name):
         epoch_rewards, completed_epochs = [],0
@@ -94,12 +90,9 @@ class Qlearner():
             curQ = self.getQValue(state, next_action)
             action_val_pairs.append((next_action, curQ))
         action_val_pairs.sort(key=lambda x: x[1], reverse=True)
-        #print(action_val_pairs[0:5])
-        #input("Continue...")
         return action_val_pairs[0]
     
     def getAction(self, state=None, context=-2, best=False, rand=False): # Set rand = TRUE for baseline comparison
-        #print("Context", context, state)
         if context==-1:
             print("NO LEGAL MOVE")
             return None 
@@ -276,10 +269,6 @@ class VoicingModel(Qlearner):
             all_lt.append(num_lt)
             all_ct.append(num_ct)
             all_sev.append(num_sev)
-
-            #state_seq_with_melody_to_MIDI(melody, state_list, self.state_indices, self.results_dir, desired_fstub=fname)
-        #if synth:
-        #    midis_to_wavs(self.results_dir)
 
         return sum(all_vl_rewards), sum(all_vc), sum(all_parallels), sum(all_illegal_leaps), sum(all_direct), sum(all_lt), sum(all_ct), sum(all_sev), all_voicings   
 
@@ -464,10 +453,6 @@ class HarmonizationModel(Qlearner):
             all_lt.append(num_lt)
             all_ct.append(num_ct)
             all_sev.append(num_sev)
-
-            #state_seq_with_melody_to_MIDI(melody, state_list, self.state_indices, self.results_dir, desired_fstub=fname)
-        #if synth:
-        #    midis_to_wavs(self.results_dir)
 
         return sum(all_vl_rewards), sum(all_hp_rewards), sum(all_vc), sum(all_parallels), sum(all_illegal_leaps), sum(all_direct), sum(all_lt), sum(all_ct), sum(all_sev), all_harms   
 
