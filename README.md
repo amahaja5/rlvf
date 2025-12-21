@@ -178,8 +178,39 @@ A voicing is represented as a list of 4 MIDI pitches: `[bass, tenor, alto, sopra
 When contributing, please:
 1. Follow PEP 8 style guidelines
 2. Add docstrings to new functions
-3. Update tests as needed
-4. Keep imports explicit (avoid `from module import *`)
+3. Write tests for new functionality
+4. Update tests as needed
+5. Keep imports explicit (avoid `from module import *`)
+
+## Testing
+
+The project includes comprehensive unit tests for all core functionality.
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run specific test file
+pytest unit_tests/test_voice_leading_rules.py
+
+# Run with coverage report
+pytest --cov=src --cov=models --cov-report=html
+```
+
+### Test Coverage
+
+Tests cover:
+- Voice leading rule checking (illegal leaps, parallel 5ths, voice crossing, etc.)
+- Chord and voicing analysis (chord identification, inversions, completeness)
+- MIDI file generation and conversion
+- Q-learning model classes (initialization, training, action selection)
+
+See `unit_tests/README.md` for detailed testing documentation.
 
 ## License
 
