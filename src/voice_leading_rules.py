@@ -1,18 +1,38 @@
-from state_space_def import * 
+from state_space_def import (
+    determine_chord_from_voicing,
+    determine_inversion,
+    notes_in_chords,
+    check_inv_triad_complete,
+    doubled_leading_tone,
+    note_names_to_numbers,
+)
 from pretty_midi import note_name_to_number
+from constants import (
+    ILLEGAL_LEAP_WEIGHT as ILL_LEAP,
+    VOICE_CROSSING_WEIGHT as VC,
+    PARALLEL_FIFTHS_OCTAVES_WEIGHT as PERF58,
+    DIRECT_FIFTHS_OCTAVES_WEIGHT as DIR58,
+    ILLEGAL_COMMON_TONE_WEIGHT as ILL_CT,
+    ILLEGAL_LEADING_TONE_RESOLUTION_WEIGHT as ILL_LT_RES,
+    ILLEGAL_SEVENTH_APPROACH_WEIGHT as ILL_7_APP,
+    ILLEGAL_SEVENTH_RESOLUTION_WEIGHT as ILL_7_RES,
+)
 
-ILL_LEAP =  0.1407
-VC =  0.1281
-PERF58 = 0.0919
-DIR58 = 0.1229
-ILL_CT = 0.1063
-ILL_LT_RES = 0.1291
-ILL_7_APP = 0.1427
-ILL_7_RES = 0.1383
+def illegal_leaps(state, next_state):
+    """
+    Count illegal melodic leaps between two voice leading states.
 
-def illegal_leaps(state, next_state): 
-    # returns number of instances of an illegal leap 
-    bass_interval = abs(next_state[0] - state[0]) # BASS FIRST!!!
+    Illegal leaps include augmented intervals (tritones), major/minor 7ths,
+    and intervals larger than an octave.
+
+    Args:
+        state (list): Current voicing [bass, tenor, alto, soprano] as MIDI pitches
+        next_state (list): Next voicing [bass, tenor, alto, soprano] as MIDI pitches
+
+    Returns:
+        int: Number of illegal leaps detected across all four voices
+    """
+    bass_interval = abs(next_state[0] - state[0])
     tenor_interval = abs(next_state[1] - state[1])
     alto_interval = abs(next_state[2] - state[2])
     soprano_interval = abs(next_state[3] - state[3])
@@ -25,10 +45,22 @@ def illegal_leaps(state, next_state):
             num_leaps += 1
     return num_leaps
 
-def voice_crossing(state,next_state):
-    # returns number of instances of voice crossing
+def voice_crossing(state, next_state):
+    """
+    Count instances of voice crossing between adjacent voice parts.
+
+    Voice crossing occurs when a lower part moves above a higher part,
+    or vice versa. This checks all adjacent pairs: bass-tenor, tenor-alto,
+    and alto-soprano.
+
+    Args:
+        state (list): Current voicing [bass, tenor, alto, soprano] as MIDI pitches
+        next_state (list): Next voicing [bass, tenor, alto, soprano] as MIDI pitches
+
+    Returns:
+        int: Number of voice crossings detected
+    """
     num_crosses = 0
-    # assumes state, next_state are LISTS!
     # voice cross between bass and tenor
     if state[0] > next_state[1] or state[1] < next_state[0]:
         num_crosses += 1
@@ -41,8 +73,20 @@ def voice_crossing(state,next_state):
     return num_crosses
 
 def parallel_fifths_octaves(state, next_state):
-    # two parts separated by a p5 or p8 move to 
-    # new pitch classes separated by the same interval 
+    """
+    Detect parallel perfect fifths and octaves between voice pairs.
+
+    Parallel fifths/octaves occur when two parts separated by a perfect 5th
+    or octave move to new pitches while maintaining that same interval.
+    This is forbidden in classical voice leading.
+
+    Args:
+        state (list): Current voicing [bass, tenor, alto, soprano] as MIDI pitches
+        next_state (list): Next voicing [bass, tenor, alto, soprano] as MIDI pitches
+
+    Returns:
+        int: Number of parallel perfect 5ths or octaves detected across all voice pairs
+    """
     num_parallels = 0
     p5 = 7
     p8 = 12
@@ -162,7 +206,30 @@ def seventh_resolve(state,next_state):
     return 0
 
 ### FULL REWARD FUNCTION ###
-def voice_leading_reward_function(state, next_state): 
+def voice_leading_reward_function(state, next_state):
+    """
+    Calculate reward for voice leading between two states.
+
+    Evaluates voice leading quality by checking for rule violations including
+    voice crossing, parallel/direct fifths and octaves, illegal leaps,
+    leading tone resolution, seventh chord handling, and illegal common tones.
+
+    Args:
+        state (list): Current voicing [bass, tenor, alto, soprano] as MIDI pitches
+        next_state (list): Next voicing [bass, tenor, alto, soprano] as MIDI pitches
+
+    Returns:
+        tuple: (total_reward, vc_count, p58_count, il_count, d58_count,
+                lt_count, ct_count, sev_count)
+            - total_reward (float): Weighted sum of violations (negative)
+            - vc_count (int): Voice crossings
+            - p58_count (int): Parallel 5ths/octaves
+            - il_count (int): Illegal leaps
+            - d58_count (int): Direct 5ths/octaves
+            - lt_count (int): Leading tone violations
+            - ct_count (int): Common tone violations
+            - sev_count (int): Seventh chord violations
+    """
     vc = voice_crossing(state, next_state)
         # negative reward for parallel 5ths/octaves
     p58 = parallel_fifths_octaves(state, next_state)

@@ -4,13 +4,10 @@ from midi2audio import FluidSynth
 import os
 from pathlib import Path
 import numpy as np
-import pretty_midi
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from tqdm import tqdm
-from pathlib import Path
 from numpy import ndarray
-import os
 import sys
 import librosa
 from datetime import datetime
@@ -46,7 +43,23 @@ def get_free_filename(stub, suffix='', directory='./results/', date=False):
                 Path(file_candidate).mkdir()
             return file_candidate
 
-def state_seq_to_MIDI(state_seq, state_indices, dir, desired_fstub='seqmid', note_dur=1): 
+def state_seq_to_MIDI(state_seq, state_indices, dir, desired_fstub='seqmid', note_dur=1):
+    """
+    Convert a sequence of voicing states to a MIDI file.
+
+    Creates a MIDI file where each state becomes a chord with all four voices
+    sounding simultaneously. All chords have equal duration.
+
+    Args:
+        state_seq (list): List of state indices representing the voicing sequence
+        state_indices (dict): Maps state indices to voicings [bass, tenor, alto, soprano]
+        dir (str): Output directory for MIDI file
+        desired_fstub (str): Filename stub. Default: 'seqmid'
+        note_dur (float): Duration of each note in seconds. Default: 1
+
+    Returns:
+        str: Path to the created MIDI file
+    """
     desired_filename = get_free_filename(desired_fstub, '.mid', directory=dir)
     # Create a PrettyMIDI object
     midi_obj = pretty_midi.PrettyMIDI() # init tempo is 120, so a quarter note is 0.5 sec
@@ -144,7 +157,19 @@ def state_seq_to_MIDI_better(state_seq, state_indices, dir, desired_fstub):
     return desired_fname, midi_obj
 
 
-def melody_to_MIDI(melody, note_length=1, save=False, path='./melody.mid'): # note length in seconds
+def melody_to_MIDI(melody, note_length=1, save=False, path='./melody.mid'):
+    """
+    Convert a melody (sequence of MIDI pitches) to a MIDI file.
+
+    Args:
+        melody (list): List of MIDI pitch numbers representing the melody
+        note_length (float): Duration of each note in seconds. Default: 1
+        save (bool): Whether to save the MIDI file. Default: False
+        path (str): Output file path if saving. Default: './melody.mid'
+
+    Returns:
+        pretty_midi.PrettyMIDI: MIDI object containing the melody
+    """
     print("MELODY:", melody)
     notes = []
     for i, mel in enumerate(melody):
@@ -167,6 +192,22 @@ def melody_to_MIDI(melody, note_length=1, save=False, path='./melody.mid'): # no
     return notes, None
 
 def state_seq_with_melody_to_MIDI(melody, state_seq, state_indices, directory, desired_fstub='seqmid'):
+    """
+    Create a MIDI file combining a melody with harmonizing voicings.
+
+    Generates a four-part harmonization where the soprano line follows the given
+    melody and the other voices are determined by the state sequence.
+
+    Args:
+        melody (list): List of MIDI pitch numbers for the soprano line
+        state_seq (list): List of state indices representing voicing sequence
+        state_indices (dict): Maps state indices to voicings [bass, tenor, alto, soprano]
+        directory (str): Output directory for MIDI file
+        desired_fstub (str): Filename stub. Default: 'seqmid'
+
+    Returns:
+        str: Path to the created MIDI file
+    """
     desired_filename = get_free_filename(desired_fstub, '.mid', directory=directory)
     # Create a PrettyMIDI object
     midi_obj = pretty_midi.PrettyMIDI() # init tempo is 120, so a quarter note is 0.5 sec
@@ -187,7 +228,20 @@ def state_seq_with_melody_to_MIDI(melody, state_seq, state_indices, directory, d
     midi_obj.instruments.append(piano)
     midi_obj.write(desired_filename)
 
-def midi_to_wav(midi_path,wav_path=None):
+def midi_to_wav(midi_path, wav_path=None):
+    """
+    Convert a MIDI file to WAV audio using FluidSynth.
+
+    Requires FluidSynth to be installed on the system.
+
+    Args:
+        midi_path (str): Path to input MIDI file
+        wav_path (str, optional): Path for output WAV file. If None, uses same
+            name as MIDI file with .wav extension
+
+    Returns:
+        None
+    """
     if wav_path == None:
         wav_path = midi_path[:-3] + 'wav'
     #print("CONVERTING")
@@ -196,6 +250,20 @@ def midi_to_wav(midi_path,wav_path=None):
     fs.midi_to_audio(midi_path, wav_path)
 
 def midis_to_wavs(midi_dir, wav_dir=None):
+    """
+    Convert all MIDI files in a directory to WAV format.
+
+    Processes all .mid files in the specified directory and converts them
+    to WAV audio files using FluidSynth.
+
+    Args:
+        midi_dir (str): Directory containing MIDI files
+        wav_dir (str, optional): Output directory for WAV files. If None,
+            WAV files are saved in the same directory as MIDI files
+
+    Returns:
+        None
+    """
     print("MIDI DIR:", midi_dir, "WAV DIR", wav_dir)
     if wav_dir == None: 
         wav_dir = midi_dir
@@ -496,84 +564,3 @@ if __name__ == "__main__":
             longer_durs.append(i)
     print("NUMBER:", len(longer_durs))
     print(longer_durs)
-
-    '''with open('./data/jsb_major_orig_voicings.yaml', 'r') as file: 
-        jsb_voicings = yaml.safe_load(file)
-
-    test_vocs = jsb_voicings['test']
-    gen_result_midis(test_vocs, state_indices, './results/human_eval/bach/', 'jsb')
-    
-    with open('./results/for_table/random_voicings.yaml', 'r') as file: 
-        rand_voc_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/model_voicings.yaml', 'r') as file: 
-        mod_voc_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/random_harmonizations.yaml', 'r') as file: 
-        rand_harm_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/model_harmonizations.yaml', 'r') as file: 
-        mod_harm_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/random_free.yaml', 'r') as file: 
-        rand_free_seqs = yaml.safe_load(file)
-
-    with open('./results/for_table/model_free.yaml', 'r') as file: 
-        mod_free_seqs = yaml.safe_load(file)'''
-
-    #gen_result_midis(rand_voc_seqs, test_durations, state_indices, './results/human_eval/voicing/', 'random')
-    #gen_result_midis(mod_voc_seqs, test_durations, state_indices, './results/human_eval/voicing/', 'mod')
-    #gen_result_midis(rand_harm_seqs, test_durations, state_indices, './results/human_eval/harm/', 'random')
-    #gen_result_midis(mod_harm_seqs, test_durations, state_indices, './results/human_eval/harm/', 'mod')
-    #gen_result_midis(rand_free_seqs, test_durations, state_indices, './results/human_eval/free/', 'random')
-    #gen_result_midis(mod_free_seqs, test_durations, state_indices, './results/human_eval/free/', 'mod')
-
-    sys.exit(0)
-
-    '''pianoroll = new_pm.instruments[0].get_piano_roll()
-    _, ax = plt.subplots()
-    ax  = custom_plot_pianoroll(ax, pianoroll, resolution=2)
-    plt.savefig()
-
-    pianoroll = old_pm.instruments[0].get_piano_roll()
-    _, ax = plt.subplots()
-    ax  = custom_plot_pianoroll(ax, pianoroll, resolution=2)
-    plt.show()
-
-    midi_to_wav(new_mid)
-    midi_to_wav(old_mid)'''
-
-    # UNIT TEST: melody_to_MIDI #
-
-    pm = pretty_midi.PrettyMIDI("./results/voicing_results/voicing-1.mid")
-    res_folder = "./results/midi_instr/"
-    test_different_midi_instruments(pm, res_folder)
-    
-
-    midi_path = "./results/voicing_results/voicing-1.mid"
-    wav_path = "./results/voicing_results/NEWSOUNDFONT_voicing-1.wav"
-    midi_to_wav(midi_path,wav_path)
-
-
-    # Loading a file on disk using PrettyMidi, and show
-    measure_subdiv=1
-    tempo = pm.get_tempo_changes()[1][0]
-    fs= 4
-    print(fs)
-    print("Tempo:", tempo)
-    pianoroll = pm.instruments[0].get_piano_roll(fs=fs)
-    _, ax = plt.subplots()
-    ax  = custom_plot_pianoroll(ax, pianoroll, resolution=2)
-
-    ax.figure.set_size_inches(20, 5)
-    plt.savefig('./results/voicing_results/voicing-1.png',bbox_inches="tight")
-
-
-    #midis_to_wavs('./results/free_results/')
-
-    '''
-    - 52
-    - 53
-    - 60
-    - 69
-    '''

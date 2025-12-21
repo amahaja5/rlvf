@@ -1,10 +1,10 @@
 
-import yaml 
+import yaml
 import numpy as np
 import random
 from tqdm import tqdm
-from MIDI_conversion import *
-from voice_leading_rules import *
+from MIDI_conversion import state_seq_to_MIDI, midis_to_wavs, state_seq_with_melody_to_MIDI
+from voice_leading_rules import harmonization_reward_function, voicing_reward_function
 import pickle
 from datetime import datetime
 import glob
@@ -15,6 +15,23 @@ def flipCoin(p):
   return r < p 
 
 class Qlearner():
+    """
+    Base Q-learning agent for voice leading tasks.
+
+    Implements Q-learning algorithm for learning optimal voice leading between
+    chord voicings. The Q-values represent the quality of transitioning from
+    one voicing (state) to another.
+
+    Attributes:
+        alpha (float): Learning rate
+        gamma (float): Discount factor for future rewards
+        epsilon_init (float): Initial exploration rate
+        epsilon_end (float): Final exploration rate after training
+        Qvalues (np.ndarray): Q-value matrix of shape (numStates, numStates)
+        chord_dict (dict): Maps chord numbers to legal state indices
+        state_indices (dict): Maps state indices to voicings
+        numStates (int): Total number of legal voicing states
+    """
     def __init__(self, alpha=0.1, gamma=.9, epsilon_init=0.5, epsilon_end=0.0, epochs=10000):
         self.alpha = alpha
         self.gamma = gamma
@@ -29,8 +46,6 @@ class Qlearner():
             self.state_indices = yaml.safe_load(file)
 
         self.numStates = len(self.state_indices.keys())
-        #print("NUMSTATES:", self.numStates)
-
         self.Qvalues = np.zeros((self.numStates,self.numStates))
 
     def saveModel(self, epochs, rewards): # saved model is just a matrix of the Q values :)
@@ -44,14 +59,12 @@ class Qlearner():
 
         with open(modelpath, 'wb') as f:
             pickle.dump(data, f)
-        #np.save(modelpath, self.Qvalues)
 
     def loadModel(self, modelpath):
         with open(modelpath, 'rb') as f: 
             data = pickle.load(f)
         self.Qvalues = data['Q']
         return data['rewards'], data['epochs']
-        #self.Qvalues = np.load(modelpath)
     
     def prepModel(self, model_name):
         epoch_rewards, completed_epochs = [],0
@@ -94,12 +107,9 @@ class Qlearner():
             curQ = self.getQValue(state, next_action)
             action_val_pairs.append((next_action, curQ))
         action_val_pairs.sort(key=lambda x: x[1], reverse=True)
-        #print(action_val_pairs[0:5])
-        #input("Continue...")
         return action_val_pairs[0]
     
     def getAction(self, state=None, context=-2, best=False, rand=False): # Set rand = TRUE for baseline comparison
-        #print("Context", context, state)
         if context==-1:
             print("NO LEGAL MOVE")
             return None 
@@ -126,6 +136,19 @@ class Qlearner():
  
 # Class freelancer inherits EMP
 class VoicingModel(Qlearner):
+    """
+    Q-learning model for voice leading given a chord progression.
+
+    Given a sequence of chords, this model learns to select optimal voicings
+    that minimize voice leading rule violations. The agent chooses from legal
+    voicings for each chord while maintaining smooth voice leading.
+
+    Args:
+        alpha (float): Learning rate. Default: 0.1
+        gamma (float): Discount factor. Default: 0.6
+        checkpoint (int): Epochs between model checkpoints. Default: 500
+        resultsdir (str): Directory for saving results. Default: './results/voicing_results/'
+    """
     def __init__(self, alpha=0.1, gamma=0.6,  checkpoint=500, resultsdir='./results/voicing_results/'):
         super().__init__(alpha, gamma)
         self.results_dir = resultsdir
@@ -277,14 +300,23 @@ class VoicingModel(Qlearner):
             all_ct.append(num_ct)
             all_sev.append(num_sev)
 
-            #state_seq_with_melody_to_MIDI(melody, state_list, self.state_indices, self.results_dir, desired_fstub=fname)
-        #if synth:
-        #    midis_to_wavs(self.results_dir)
-
         return sum(all_vl_rewards), sum(all_vc), sum(all_parallels), sum(all_illegal_leaps), sum(all_direct), sum(all_lt), sum(all_ct), sum(all_sev), all_voicings   
 
 
 class HarmonizationModel(Qlearner):
+    """
+    Q-learning model for harmonizing a melody.
+
+    Given a melody (sequence of soprano notes), this model learns to select
+    appropriate chords and voicings that harmonize the melody while following
+    voice leading conventions and harmonic progression rules.
+
+    Args:
+        alpha (float): Learning rate. Default: 0.1
+        gamma (float): Discount factor. Default: 0.6
+        checkpoint (int): Epochs between model checkpoints. Default: 500
+        resultsdir (str): Directory for saving results. Default: './results/harmonization_results/'
+    """
     def __init__(self, alpha=0.1, gamma=0.6,  checkpoint=500, resultsdir='./results/harmonization_results/', ):
         super().__init__(alpha, gamma)
         self.results_dir = resultsdir
@@ -465,13 +497,22 @@ class HarmonizationModel(Qlearner):
             all_ct.append(num_ct)
             all_sev.append(num_sev)
 
-            #state_seq_with_melody_to_MIDI(melody, state_list, self.state_indices, self.results_dir, desired_fstub=fname)
-        #if synth:
-        #    midis_to_wavs(self.results_dir)
-
         return sum(all_vl_rewards), sum(all_hp_rewards), sum(all_vc), sum(all_parallels), sum(all_illegal_leaps), sum(all_direct), sum(all_lt), sum(all_ct), sum(all_sev), all_harms   
 
-class FreeModel(Qlearner): # uses default getLegalActions
+class FreeModel(Qlearner):
+    """
+    Q-learning model for free composition (both chords and voicings).
+
+    This model learns to generate both chord progressions and voice leading
+    from scratch without any constraints. It explores the full state space
+    of possible voicings and learns harmonic progression preferences.
+
+    Args:
+        alpha (float): Learning rate. Default: 0.1
+        gamma (float): Discount factor. Default: 0.6
+        checkpoint (int): Epochs between model checkpoints. Default: 500
+        resultsdir (str): Directory for saving results. Default: './results/free_results/'
+    """
     def __init__(self, alpha=0.1, gamma=0.6, checkpoint=500, resultsdir='./results/free_results/'):
         super().__init__(alpha, gamma)
         self.results_dir = resultsdir

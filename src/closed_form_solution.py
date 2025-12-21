@@ -1,9 +1,8 @@
 ### Load in the state dictionaries ###
 import random
 import yaml
-import numpy as np 
-from MIDI_conversion import *
-from voice_leading_rules import *
+import numpy as np
+from voice_leading_rules import voice_crossing, parallel_fifths_octaves, illegal_leaps, direct_fifths_octaves
 import copy
 import pretty_midi
 
@@ -75,7 +74,7 @@ def calculateRewards(state, next_state):
     # negative reward for voice crossing
     voice_cross = voice_crossing(cur_start, cur_end)
     # negative reward for parallel 5ths/octaves
-    p58 = parallel_fifths_and_octaves(cur_start, cur_end)
+    p58 = parallel_fifths_octaves(cur_start, cur_end)
     ill = illegal_leaps(cur_start, cur_end)
     d58 = direct_fifths_octaves(cur_start, cur_end)
     reward = -.2*voice_cross + -.1*p58 + -.2*ill + -.1*d58
