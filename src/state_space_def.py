@@ -1,12 +1,24 @@
 
 '''
-This script sets up the state dictionaries for use by 
-the RL tonal music models. 
+This script sets up the state dictionaries for use by
+the RL tonal music models.
 '''
 import yaml
 import pretty_midi
 import sys
-from chord_constants import *
+from chord_constants import (
+    bass_range,
+    tenor_range,
+    alto_range,
+    soprano_range,
+    notes_in_chords,
+    pitches_in_triads_major,
+    pitches_in_sevenths_major,
+    notesets,
+    chord_number_to_string_major,
+    inversion_numbers_triad,
+    inversion_numbers_seventh,
+)
 
 '''
 Vocabulary:

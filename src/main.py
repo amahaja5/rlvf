@@ -1,8 +1,7 @@
 ### Train and Eval code for RL model ###
-from MIDI_conversion import *
-from voice_leading_rules import *
+from voice_leading_rules import harmonization_reward_function
 import matplotlib.pyplot as plt
-from models.models import *
+from models.models import VoicingModel, FreeModel, HarmonizationModel
 import os
 import glob
 import yaml

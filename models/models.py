@@ -1,10 +1,10 @@
 
-import yaml 
+import yaml
 import numpy as np
 import random
 from tqdm import tqdm
-from MIDI_conversion import *
-from voice_leading_rules import *
+from MIDI_conversion import state_seq_to_MIDI, midis_to_wavs, state_seq_with_melody_to_MIDI
+from voice_leading_rules import harmonization_reward_function, voicing_reward_function
 import pickle
 from datetime import datetime
 import glob
