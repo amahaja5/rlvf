@@ -15,6 +15,23 @@ def flipCoin(p):
   return r < p 
 
 class Qlearner():
+    """
+    Base Q-learning agent for voice leading tasks.
+
+    Implements Q-learning algorithm for learning optimal voice leading between
+    chord voicings. The Q-values represent the quality of transitioning from
+    one voicing (state) to another.
+
+    Attributes:
+        alpha (float): Learning rate
+        gamma (float): Discount factor for future rewards
+        epsilon_init (float): Initial exploration rate
+        epsilon_end (float): Final exploration rate after training
+        Qvalues (np.ndarray): Q-value matrix of shape (numStates, numStates)
+        chord_dict (dict): Maps chord numbers to legal state indices
+        state_indices (dict): Maps state indices to voicings
+        numStates (int): Total number of legal voicing states
+    """
     def __init__(self, alpha=0.1, gamma=.9, epsilon_init=0.5, epsilon_end=0.0, epochs=10000):
         self.alpha = alpha
         self.gamma = gamma
@@ -119,6 +136,19 @@ class Qlearner():
  
 # Class freelancer inherits EMP
 class VoicingModel(Qlearner):
+    """
+    Q-learning model for voice leading given a chord progression.
+
+    Given a sequence of chords, this model learns to select optimal voicings
+    that minimize voice leading rule violations. The agent chooses from legal
+    voicings for each chord while maintaining smooth voice leading.
+
+    Args:
+        alpha (float): Learning rate. Default: 0.1
+        gamma (float): Discount factor. Default: 0.6
+        checkpoint (int): Epochs between model checkpoints. Default: 500
+        resultsdir (str): Directory for saving results. Default: './results/voicing_results/'
+    """
     def __init__(self, alpha=0.1, gamma=0.6,  checkpoint=500, resultsdir='./results/voicing_results/'):
         super().__init__(alpha, gamma)
         self.results_dir = resultsdir
@@ -274,6 +304,19 @@ class VoicingModel(Qlearner):
 
 
 class HarmonizationModel(Qlearner):
+    """
+    Q-learning model for harmonizing a melody.
+
+    Given a melody (sequence of soprano notes), this model learns to select
+    appropriate chords and voicings that harmonize the melody while following
+    voice leading conventions and harmonic progression rules.
+
+    Args:
+        alpha (float): Learning rate. Default: 0.1
+        gamma (float): Discount factor. Default: 0.6
+        checkpoint (int): Epochs between model checkpoints. Default: 500
+        resultsdir (str): Directory for saving results. Default: './results/harmonization_results/'
+    """
     def __init__(self, alpha=0.1, gamma=0.6,  checkpoint=500, resultsdir='./results/harmonization_results/', ):
         super().__init__(alpha, gamma)
         self.results_dir = resultsdir
@@ -456,7 +499,20 @@ class HarmonizationModel(Qlearner):
 
         return sum(all_vl_rewards), sum(all_hp_rewards), sum(all_vc), sum(all_parallels), sum(all_illegal_leaps), sum(all_direct), sum(all_lt), sum(all_ct), sum(all_sev), all_harms   
 
-class FreeModel(Qlearner): # uses default getLegalActions
+class FreeModel(Qlearner):
+    """
+    Q-learning model for free composition (both chords and voicings).
+
+    This model learns to generate both chord progressions and voice leading
+    from scratch without any constraints. It explores the full state space
+    of possible voicings and learns harmonic progression preferences.
+
+    Args:
+        alpha (float): Learning rate. Default: 0.1
+        gamma (float): Discount factor. Default: 0.6
+        checkpoint (int): Epochs between model checkpoints. Default: 500
+        resultsdir (str): Directory for saving results. Default: './results/free_results/'
+    """
     def __init__(self, alpha=0.1, gamma=0.6, checkpoint=500, resultsdir='./results/free_results/'):
         super().__init__(alpha, gamma)
         self.results_dir = resultsdir
