@@ -1,7 +1,3 @@
-# RL for part writing in tonal harmony
-. Tonal harmony has a vocabulary consisting of triads and 7th chords and a grammar consisting of the ways in which the chords are selected (harmonic progression) and connected (voice leading). The basic task in this project is to do voice leading given a harmonic progression, following the conventions and norms of tonal composers. This will require formulating the voice leading problem (rewards, state space/features) so that reinforcement strategies like value iteration can be applied. Once the problem has been properly translated, several reinforcement learning schemes can be applied and evaluated.
-
-We implement three models each designed to accomplish a slightly different task: a voicing model, a free model, and a melody harmonization model. 
 
 ## Voicing Model: 
 1. Harmonic progression is provided, algorithm need only provide the voicings
